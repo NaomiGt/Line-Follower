@@ -1,10 +1,10 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity mc_testbench is
-end entity mc_testbench;
+entity motor_control_testbench is
+end entity motor_control_testbench;
 
-architecture structural of mc_testbench is
+architecture structural of motor_control_testbench is
     component motor_controller is
         port (clk : in std_logic;
         reset : in std_logic;
@@ -24,10 +24,10 @@ begin
     reset <= '1' after 0 ms,
              '0' after 10 ms;
     sensor <= '1' after 0 ms,
-              '0' after 20 ms,
-              '1' after 40 ms,
-              '1' after 50 ms,
-              '0' after 60 ms;
+              '0' after 30 ms,
+	      '1' after 50 ms,
+              '0' after 70 ms,
+              '1' after 90 ms;
 
     l0: motor_controller port map ( clk => clk,
                                     reset => reset,

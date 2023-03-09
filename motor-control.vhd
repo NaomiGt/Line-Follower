@@ -21,7 +21,7 @@ begin
             if(reset = '1') then
                 state <= motor_off;
             else
-                state <= motor_on;
+                state <= new_state;
             end if;
         end if;
     end process;
