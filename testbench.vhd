@@ -19,7 +19,7 @@ architecture structural of testbench is
 
 begin
     clk <= '1' after 0 us,
-           '0' after 0.02 us when clk /= '0' else '1' after 10 us;
+           '0' after 0.01 us when clk /= '0' else '1' after 0.01 us;
     reset <= '1' after 0 us,
              '0' after 10 us;
 
