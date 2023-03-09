@@ -19,8 +19,32 @@ begin
     begin
         if(rising_edge(clk)) then
             if(reset = '1') then
+                state <= motor_off;
             else
+                state <= motor_on;
             end if;
         end if;
+    end process;
+
+    process(state, sensor)
+    begin
+        case state is
+            when motor_off =>
+                motor <= '0';
+
+                if(sensor = '1') then
+                    new_state <= motor_on;
+                else
+                    new_state <= motor_off;
+                end if;
+            when motor_on =>
+                motor <= '1';
+
+                if(sensor = '0') then
+                    new_state <= motor_off;
+                else
+                    new_state <= motor_on;
+                end if;
+        end case;
     end process;
 end architecture behavioural;
