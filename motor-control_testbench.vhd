@@ -6,32 +6,46 @@ end entity motor_control_testbench;
 
 architecture structural of motor_control_testbench is
     component motor_controller is
-        port (clk : in std_logic;
-        reset : in std_logic;
-        sensor : in std_logic;
-        motor : out std_logic
+        port (clk       : in std_logic;
+              reset     : in std_logic;
+              direction : in std_logic;
+              countin   : in std_logic_vector(19 downto 0);
+              pwm       : out std_logic
         );
     end component motor_controller;
 
-    signal clk : std_logic;
-    signal reset : std_logic;
-    signal sensor : std_logic;
-    signal motor : std_logic;
+    component timebase is 
+        port ( clk : in std_logic;
+               reset : in std_logic;
+               countout : out std_logic_vector(19 downto 0)
+            );
+    end component timebase;
+
+    signal clk, reset, direction, pwm : std_logic;
+    signal count                      : std_logic_vector(19 downto 0);
 
 begin
-    clk <= '1' after 0 ms,
-           '0' after 10 ms when clk /= '0' else '1' after 10 ms;
-    reset <= '1' after 0 ms,
-             '0' after 10 ms;
-    sensor <= '1' after 0 ms,
-              '0' after 30 ms,
-	      '1' after 50 ms,
-              '0' after 70 ms,
-              '1' after 90 ms;
-
-    l0: motor_controller port map ( clk => clk,
-                                    reset => reset,
-                                    sensor => sensor,
-                                    motor => motor
+    l0: timebase port map ( clk => clk,
+                            reset => reset,
+                            countout => count
     );
+
+    l1: motor_controller port map (
+        clk         => clk,
+        reset       => reset,
+        direction   => direction,
+        countin     => count,
+        pwm         => pwm
+        );
+
+    clk         <=  '0' after 0 ns,
+                    '1' after 10 ns when clk /= '1' else '0' after 10 ns;
+    reset       <=  '1' after 0 ns,
+                    '0' after 20 ns,
+                    '1' after 20000000 ns,
+                    '0' after 20000020 ns,
+                    '1' after 40000000 ns,
+                    '0' after 40000020 ns;
+    direction   <=  '0' after 0 ns,
+                    '1' after 20000000 ns;
 end architecture structural;
