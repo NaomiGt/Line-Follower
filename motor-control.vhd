@@ -18,12 +18,23 @@ architecture behavioural of motor_controller is
                                     motor_ccw,
                                     motor_cw);
     signal state, new_state: motor_controller_state;
+    signal internal_clk : std_logic;
 
 begin
-    timebase_rst <= '1';
     process(countin)
     begin
-        if(to_integer(unsigned(countin)) = 1000000) then
+        if(to_integer(unsigned(countin)) < 500000) then
+            internal_clk <= '1';
+        elsif(to_integer(unsigned(countin)) < 1000000) then
+            internal_clk <= '0';
+        else
+            timebase_rst <= '1';
+        end if;
+    end process;
+
+    process(internal_clk)
+    begin
+        if(rising_edge(internal_clk)) then
 		if(reset = '1') then
                 	state <= motor_off;
             	else
