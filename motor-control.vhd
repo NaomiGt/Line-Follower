@@ -3,11 +3,12 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity motor_controller is
-port( clk       : in std_logic;
-      reset     : in std_logic;
-      direction : in std_logic; --'0' == ccw, '1' == cw.
-      countin   : in std_logic_vector(19 downto 0);
-      pwm       : out std_logic
+port( clk       	: in std_logic;
+      reset     	: in std_logic;
+      direction 	: in std_logic; --'0' == ccw, '1' == cw.
+      countin   	: in std_logic_vector(19 downto 0);
+      timebase_rst 	: out std_logic; -- Signal to timebase for reseting counter
+      pwm       	: out std_logic -- Pulse width modulation
     );
 
 end entity motor_controller;
@@ -19,18 +20,23 @@ architecture behavioural of motor_controller is
     signal state, new_state: motor_controller_state;
 
 begin
-    process(clk)
+    timebase_rst <= '1';
+    process(countin)
     begin
-        if(rising_edge(clk)) then
-            if(reset = '1') then
-                state <= motor_off;
-            else
-                state <= new_state;
-            end if;
-        end if;
+        if(to_integer(unsigned(countin)) = 1000000) then
+		if(reset = '1') then
+                	state <= motor_off;
+            	else
+                	state <= new_state;
+            	end if;
+		
+		timebase_rst <= '1';
+	else	
+		timebase_rst <= '0';
+	end if;
     end process;
 
-    process(state, direction, clk)
+    process(state)
     begin
         case state is
             when motor_off =>
@@ -44,7 +50,7 @@ begin
 
             when motor_ccw =>
                 pwm <= '1';
-		        pwm <= '0' after 1 ns;
+		pwm <= '0' after 1 ns;
 
                 if(direction = '1') then
                     new_state <= motor_cw;
@@ -54,7 +60,7 @@ begin
             
             when motor_cw =>
                 pwm <= '1';
-		        pwm <= '0' after 2 ns;
+		pwm <= '0' after 2 ns;
 
                 if(direction = '1') then
                     new_state <= motor_cw;
