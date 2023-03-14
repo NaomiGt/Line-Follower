@@ -27,7 +27,7 @@ architecture structural of motor_control_testbench is
 
 begin
     l0: timebase port map ( clk => clk,
-                            reset => timebase_rst,
+                            reset => reset,
                             countout => count
     );
 
@@ -50,5 +50,6 @@ begin
                     	    '0' after 40000020 ns;
     	direction   	<=  '0' after 0 ns,
                     	    '1' after 20000000 ns;
+	    timebase_rst    <=  '1' after 0 ns;
                     	    
 end architecture structural;
