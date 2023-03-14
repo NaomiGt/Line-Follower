@@ -7,7 +7,6 @@ port( clk       	: in std_logic;
       reset     	: in std_logic;
       direction 	: in std_logic; --'0' == ccw, '1' == cw.
       countin   	: in std_logic_vector(19 downto 0); -- count input from timebase
-      timebase_rst 	: out std_logic; -- Signal to timebase for reseting counter (defunct)
       pwm       	: out std_logic -- Pulse width modulation
     );
 
@@ -15,10 +14,11 @@ end entity motor_controller;
 
 architecture behavioural of motor_controller is
     type motor_controller_state is (motor_off, --State off is when the motor is fully turned off -> pwm = '0'
-                                    motor_moving, --State moving is when the motor is generating a pwm signal -> pwm = '1'
+                                    motor_active, --State moving is when the motor is generating a pwm signal -> pwm = '1'
                                     motor_passive); --State passive is when the motor is waiting for the next pwm -> pwm = '0'
     signal state, new_state: motor_controller_state;
     signal pwm_internal : std_logic; -- Internal pwm signal = pwm but internally
+
 begin
     process(clk)
     begin
@@ -31,41 +31,37 @@ begin
 	    end if;
     end process;
 
-    process(state, direction)
+    process(state, direction, countin)
     begin
-	    report "The current state is " &motor_controller_state'image(state); --print current state on change of dir
         case state is
             when motor_off =>
                 pwm_internal <= '0';
-                
-                if (direction = '0') then --if ccw
-                    new_state <= motor_moving;
-                elsif (direction = '1') then --if cw
-                    new_state <= motor_moving;
+
+                if (direction = '0' or direction = '1') then --if ccw or cw
+                    new_state <= motor_active;
 		        else
 		            new_state <= motor_off;
                 end if;
 
-            when motor_moving => --move motor cw or ccw
+            when motor_active => --move motor cw or ccw
                 pwm_internal <= '1';
-                
+
                 if (direction = '0') then --if ccw
-                    new_state <= motor_passive after 1 ms;
+                    if(to_integer(unsigned(countin)) >= 50000) then
+                        new_state <= motor_passive;
+                    end if;
                 elsif (direction = '1') then --if cw
-                    new_state <= motor_passive after 2 ms;
+                    if(to_integer(unsigned(countin)) >= 100000) then
+                        new_state <= motor_passive;
+                    end if;
 		        else
 		            new_state <= motor_off;
                 end if;
             
             when motor_passive =>
                 pwm_internal <= '0';
-
-                if (direction = '0') then --if ccw
-                    new_state <= motor_moving after 19 ms;
-                elsif (direction = '1') then --if cw
-                    new_state <= motor_moving after 18 ms;
-                else
-                    new_state <= motor_off;
+                if(to_integer(unsigned(countin)) >= 1000000) then
+                    new_state <= motor_active;
                 end if;
         end case;
     end process;

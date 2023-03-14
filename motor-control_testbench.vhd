@@ -10,7 +10,6 @@ architecture structural of motor_control_testbench is
               reset         : in std_logic;
               direction     : in std_logic;
               countin       : in std_logic_vector(19 downto 0);
-              timebase_rst  : out std_logic;
               pwm           : out std_logic
         );
     end component motor_controller;
@@ -22,7 +21,7 @@ architecture structural of motor_control_testbench is
             );
     end component timebase;
 
-    signal clk, reset, direction, pwm, timebase_rst : std_logic;
+    signal clk, reset, direction, pwm : std_logic;
     signal count                                    : std_logic_vector(19 downto 0);
 
 begin
@@ -36,7 +35,6 @@ begin
         reset       => reset,
         direction   => direction,
         countin     => count,
-        timebase_rst => timebase_rst,
         pwm         => pwm
         );
 
@@ -50,6 +48,5 @@ begin
                     	    '0' after 40000020 ns;
     	direction   	<=  '0' after 0 ns,
                     	    '1' after 20000000 ns;
-	    timebase_rst    <=  '1' after 0 ns;
                     	    
 end architecture structural;
