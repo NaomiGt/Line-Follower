@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 entity timebase is 
     port(clk    : in std_logic;
          reset  : in std_logic;
-         countout : out std_logic_vector (19 downto 0)
+         count_out : out std_logic_vector (19 downto 0)
          );
 end entity timebase;
 
@@ -29,5 +29,5 @@ begin
         newcount <= count + 1;
     end process;
 
-    countout <= std_logic_vector(count);
+    count_out <= std_logic_vector(count);
 end architecture behavioural;

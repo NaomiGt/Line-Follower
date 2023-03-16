@@ -6,7 +6,9 @@ entity controller is
     port (
         clk   : in std_logic;
         rst : in std_logic; --internal rst
-        sens : std_logic_vector(2 downto 0); --sensor input representation l-m-r
+        sens_l : in std_logic;
+        sens_m : in std_logic;
+        sens r : in std_logic;
         count_in : in std_logic_vector(19 downto 0);
         dir_l : out std_logic;
         rst_l : out std_logic;
@@ -26,8 +28,16 @@ architecture behavioural of controller is
             );
     
         signal state, new_state : controller_state;
+        signal sens : std_logic_vector(2 downto 0); --sensor input representation l-m-r
 
 begin
+
+process(sens_l, sens_m, sens_r) --create sens logic vector from different logic signals
+begin
+    sens(2) <= sens_l;
+    sens(1) <= sens_m;
+    sens(0) <= sens_r;
+end process;
 
 process(clk)
 begin
