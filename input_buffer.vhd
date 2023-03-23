@@ -6,12 +6,8 @@ entity three_bit_registry is
     port(
         clk : in std_logic;
         rst: in std_logic;
-        sensor_l : in std_logic;
-        sensor_m : in std_logic;
-        sensor_r : in std_logic;
-        sensor_l_o : out std_logic;
-        sensor_m_o : out std_logic;
-        sensor_r_o : out std_logic
+        sens_in_reg : in std_logic_vector(2 downto 0);
+        sens_out_reg : out std_logic_vector(2 downto 0)
     );
 end entity three_bit_registry;
 
@@ -22,13 +18,9 @@ process(clk)
 begin 
     if(rising_edge(clk)) then
         if (rst = '1') then
-            sensor_l_o <= '0';
-            sensor_m_o <= '0';  
-            sensor_r_o <= '0';
+            sens_out_reg <= (others => '0');
         else
-            sensor_l_o <= sensor_l;
-            sensor_m_o <= sensor_m;  
-            sensor_r_o <= sensor_r;
+            sens_out_reg <= sens_in_reg;
         end if;
     end if;
 end process;
@@ -42,12 +34,8 @@ entity input_buffer is
     port(
         clk : in std_logic;
         rst: in std_logic;
-        sensor_l_in : in std_logic;
-        sensor_m_in : in std_logic;
-        sensor_r_in : in std_logic;
-        sensor_l_out : out std_logic;
-        sensor_m_out : out std_logic;
-        sensor_r_out : out std_logic
+        sens_in : in std_logic_vector(2 downto 0);
+        sens_out : out std_logic_vector(2 downto 0)
     );
 end entity input_buffer;
 
@@ -57,36 +45,28 @@ architecture structural of input_buffer is
         port(
             clk : in std_logic;
             rst: in std_logic;
-            sensor_l : in std_logic;
-            sensor_m : in std_logic;
-            sensor_r : in std_logic;
-            sensor_l_o : out std_logic;
-            sensor_m_o : out std_logic;
-            sensor_r_o : out std_logic
+            sens_in_reg : in std_logic_vector(2 downto 0);
+            sens_out_reg : out std_logic_vector(2 downto 0)
         );
     end component;
 
-    signal sensor_l_i, sensor_m_i, sensor_r_i : std_logic;
+    signal sens_i, sens_o : std_logic_vector(2 downto 0);
 
 begin 
 
-    lb0: three_bit_registry port map(clk, 
-                                     rst, 
-                                     sensor_l_in, 
-                                     sensor_m_in,
-                                     sensor_r_in,
-                                     sensor_l_i, 
-                                     sensor_m_i,
-                                     sensor_r_i
-                                     );
+    lb0: three_bit_registry port map(
+        clk => clk,
+        rst => rst,
+        sens_in_reg => sens_in,
+        sens_out_reg => sens_i
+        );
 
-    lb1: three_bit_registry port map(clk, 
-                                     rst, 
-                                     sensor_l_i, 
-                                     sensor_m_i,
-                                     sensor_r_i,
-                                     sensor_l_out, 
-                                     sensor_m_out,
-                                     sensor_r_out
-                                     );
+    lb1: three_bit_registry port map(
+        clk => clk,
+        rst => rst,
+        sens_in_reg => sens_i,
+        sens_out_reg => sens_o
+        );
+
+    sens_out <= std_logic_vector(sens_o);
 end architecture;

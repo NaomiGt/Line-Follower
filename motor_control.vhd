@@ -6,7 +6,7 @@ entity motor_controller is
 port( clk       	: in std_logic;
       reset     	: in std_logic;
       direction 	: in std_logic; --'0' == ccw, '1' == cw.
-      countin   	: in std_logic_vector(19 downto 0); -- count input from timebase
+      count_in   	: in std_logic_vector(19 downto 0); -- count input from timebase
       pwm       	: out std_logic -- Pulse width modulation
     );
 
@@ -31,40 +31,35 @@ begin
 	    end if;
     end process;
 
-    process(state, direction, countin)
+    process(state, direction, count_in)
     begin
         case state is
             when motor_off =>
-                pwm_internal <= '0';
-
-                if (direction = '0' or direction = '1') then --if ccw or cw
-                    new_state <= motor_active;
-		        else
-		            new_state <= motor_off;
-                end if;
+                pwm <= '0';
+                new_state <= motor_active;
 
             when motor_active => --move motor cw or ccw
-                pwm_internal <= '1';
+                pwm <= '1';
 
                 if (direction = '0') then --if ccw
-                    if(to_integer(unsigned(countin)) >= 50000) then
+                    if(unsigned(count_in) >= to_unsigned(50000, 20)) then
                         new_state <= motor_passive;
+                    else
+                        new_state <= motor_active;
                     end if;
                 elsif (direction = '1') then --if cw
-                    if(to_integer(unsigned(countin)) >= 100000) then
+                    if(unsigned(count_in) >= to_unsigned(100000, 20)) then
                         new_state <= motor_passive;
+                    else
+                        new_state <= motor_active;
                     end if;
-		        else
-		            new_state <= motor_off;
-                end if;
+		        end if;
             
             when motor_passive =>
-                pwm_internal <= '0';
-                if(to_integer(unsigned(countin)) >= 1000000) then
-                    new_state <= motor_active;
-                end if;
+                pwm <= '0';
+                new_state <= motor_passive;
+
         end case;
     end process;
 
-	pwm <= std_logic(pwm_internal); --pwm output is the internal pwm 
 end architecture behavioural;

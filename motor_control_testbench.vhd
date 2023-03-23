@@ -9,7 +9,7 @@ architecture structural of motor_control_testbench is
         port (clk           : in std_logic;
               reset         : in std_logic;
               direction     : in std_logic;
-              countin       : in std_logic_vector(19 downto 0);
+              count_in       : in std_logic_vector(19 downto 0);
               pwm           : out std_logic
         );
     end component motor_controller;
@@ -17,7 +17,7 @@ architecture structural of motor_control_testbench is
     component timebase is 
         port ( clk : in std_logic;
                reset : in std_logic;
-               countout : out std_logic_vector(19 downto 0)
+               count_out : out std_logic_vector(19 downto 0)
             );
     end component timebase;
 
@@ -27,14 +27,14 @@ architecture structural of motor_control_testbench is
 begin
     l0: timebase port map ( clk => clk,
                             reset => reset,
-                            countout => count
+                            count_out => count
     );
 
     l1: motor_controller port map (
         clk         => clk,
         reset       => reset,
         direction   => direction,
-        countin     => count,
+        count_in     => count,
         pwm         => pwm
         );
 

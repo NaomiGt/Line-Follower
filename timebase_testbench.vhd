@@ -9,13 +9,13 @@ architecture structural of testbench is
     component timebase is
         port (clk : in std_logic;
         reset : in std_logic;
-        countout : out std_logic_vector (19 downto 0)
+        count_out : out std_logic_vector (19 downto 0)
         );
     end component timebase;
 
     signal clk : std_logic;
     signal reset : std_logic;
-    signal countout : std_logic_vector (19 downto 0);
+    signal count_out : std_logic_vector (19 downto 0);
 
 begin
     clk <= '1' after 0 us,
@@ -25,6 +25,6 @@ begin
 
     l0: timebase port map ( clk => clk,
                             reset => reset,
-                            countout => countout
+                            count_out => count_out
     );
 end architecture structural;

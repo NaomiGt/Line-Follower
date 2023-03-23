@@ -6,9 +6,7 @@ entity controller is
     port (
         clk   : in std_logic;
         rst : in std_logic; --internal rst
-        sens_l : in std_logic;
-        sens_m : in std_logic;
-        sens r : in std_logic;
+        sens_in_ctrl : in std_logic_vector(2 downto 0);
         count_in : in std_logic_vector(19 downto 0);
         dir_l : out std_logic;
         rst_l : out std_logic;
@@ -19,7 +17,8 @@ entity controller is
 end entity;
 
 architecture behavioural of controller is
-        type controller_state is (decide,
+        type controller_state is (
+            decide,
             forward,
             gen_right, --gentle right
             right,
@@ -28,88 +27,95 @@ architecture behavioural of controller is
             );
     
         signal state, new_state : controller_state;
-        signal sens : std_logic_vector(2 downto 0); --sensor input representation l-m-r
+        signal rst_r_i, rst_l_i, dir_l_i, dir_r_i: std_logic;
 
 begin
-
-process(sens_l, sens_m, sens_r) --create sens logic vector from different logic signals
-begin
-    sens(2) <= sens_l;
-    sens(1) <= sens_m;
-    sens(0) <= sens_r;
-end process;
 
 process(clk)
 begin
     if(rising_edge(clk)) then
         if(rst = '1') then
-                   state <= decide; --decide direction if rst
-               else
-                   state <= new_state; --Assign new state to current state
-               end if;
-       end if;
+            state <= decide; --decide direction if rst
+            rst_t <= '1';
+        elsif(to_integer(unsigned(count_in)) >= 100000) then
+            state <= decide;
+            rst_t <= '1';
+       
+        else
+            state <= new_state; --Assign new state to current state
+	        rst_t <= '0';
+        end if;
+
+       
+    end if;
+
 end process;
 
-process(state, sens)  --sens = '1' -> black sens = '0' -> white && cw/forward = '1' and ccw/backward = '0'
-begin
+
+runprocess(state, sens_in_ctrl, clk)  --sens_in_ctrl = '1' -> black sens_in_ctrl = '0' -> white && cw/forward = '1' and ccw/backward = '0'
+begin    
     case state is
         when decide =>
-            rst_t <= '0';
-            rst_l <= '0';
-            rst_r <= '0';
-            if (to_integer(unsigned(sens)) = '0' or to_integer(unsigned(sens)) = '2' or to_integer(unsigned(sens)) = '5' or to_integer(unsigned(sens)) = '7') then
+            dir_l_i <= '0';
+            dir_r_i <= '0';
+            rst_l_i <= '0';
+            rst_r_i <= '0';
+
+            if (sens_in_ctrl =  "000") then --0
                 new_state <= forward;
-            elsif (to_integer(unsigned(sens)) = '1') then
+            elsif(sens_in_ctrl = "010" ) then --2
+                new_state <= forward;
+            elsif (sens_in_ctrl = "101" ) then --5
+                new_state <= forward;
+            elsif(sens_in_ctrl = "111" ) then --7
+                new_state <= forward;
+            elsif(sens_in_ctrl = "001") then --1
                 new_state <= gen_left;
-            elsif (to_integer(unsigned(sens)) = '3') then
+            elsif (sens_in_ctrl = "011") then --3
                 new_state <= left;
-            elsif (to_integer(unsigned(sens)) = '4') then
+            elsif (sens_in_ctrl = "100") then --4
                 new_state <= gen_right;
-            else
+            elsif (sens_in_ctrl = "110") then --6
                 new_state <= right;
             end if;
-
+            
         when forward =>
-            dir_l <= '1';
-            dir_r <= '1';
-            if(to_integer(unsigned(count_in)) >= 1000000) then
-                new_state <= decide;
-                rst_t <= '1';
-            end if;
+            dir_l_i <= '1';
+            dir_r_i <= '1';
+            rst_l_i <= '0';
+            rst_r_i <= '0';
 
         when gen_right =>
-            dir_l <= '1';
-            rst_r <= '1';
-            if(to_integer(unsigned(count_in)) >= 1000000) then
-                new_state <= decide;
-                rst_t <= '1';
-            end if;
+            dir_l_i <= '1';
+            rst_r_i <= '1';
+            rst_l_i <= '0';
+            dir_r_i <= '0';
 
         when right =>
-            dir_l <= '1';
-            dir_r <= '0';
-            if(to_integer(unsigned(count_in)) >= 1000000) then
-                new_state <= decide;
-                rst_t <= '1';
-            end if;
+            dir_l_i <= '1';
+            dir_r_i <= '0';
+            rst_r_i <= '0';
+            rst_l_i <= '0';
 
         when gen_left =>
-            rst_l <= '1';
-            dir_r <= '1';
-            if(to_integer(unsigned(count_in)) >= 1000000) then
-                new_state <= decide;
-                rst_t <= '1';
-            end if;
+            rst_l_i <= '1';
+            dir_r_i <= '1';
+            rst_r_i <= '0';
+            dir_l_i <= '0';
 
         when left =>
-            dir_l <= '0';
-            dir_r <= '1';
-            if(to_integer(unsigned(count_in)) >= 1000000) then
-                new_state <= decide;
-                rst_t <= '1';
-            end if;
+            dir_l_i <= '0';
+            dir_r_i <= '1';
+            rst_r_i <= '0';
+            rst_l_i <= '0';
 
     end case;
-    
+
 end process;
+
+rst_l <= rst_l_i;
+rst_r <= rst_r_i;
+dir_l <= dir_l_i;
+dir_r <= dir_r_i;
+
 end architecture; 
