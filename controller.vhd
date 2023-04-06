@@ -52,7 +52,7 @@ begin
 end process;
 
 
-runprocess(state, sens_in_ctrl, clk)  --sens_in_ctrl = '1' -> black sens_in_ctrl = '0' -> white && cw/forward = '1' and ccw/backward = '0'
+process(state, sens_in_ctrl, clk)  --sens_in_ctrl = '1' -> black sens_in_ctrl = '0' -> white && cw/forward = '1' and ccw/backward = '0'
 begin    
     case state is
         when decide =>
