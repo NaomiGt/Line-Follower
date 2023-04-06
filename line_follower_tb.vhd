@@ -41,12 +41,12 @@ begin
     '0' after 40 ns;
 
   sens_in <= "000" after 0 ns, --bbb
-    "001" after 70 ms, --bbw
-    "010" after 110 ms, --bwb
-    "011" after 150 ms, --bww
-    "100" after 190 ms, --wbb
-    "101" after 230 ms, --wbw
-    "110" after 270 ms, --wwb
-    "111" after 310 ms;--www
+    "001" after 100 ms, --bbw
+    "010" after 200 ms, --bwb
+    "011" after 300 ms, --bww
+    "100" after 400 ms, --wbb
+    "101" after 500 ms, --wbw
+    "110" after 600 ms, --wwb
+    "111" after 700 ms;--www
 
 end architecture structural;

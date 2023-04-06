@@ -20,10 +20,10 @@ architecture behavioural of controller is
         type controller_state is (
             decide,
             forward,
-            gen_right, --gentle right
-            right,
-            gen_left, --gentle left
-            left
+            gen_right, --gentle rright
+            rright,
+            gen_left, --gentle lleft
+            lleft
             );
     
         signal state, new_state : controller_state;
@@ -36,19 +36,12 @@ begin
     if(rising_edge(clk)) then
         if(rst = '1') then
             state <= decide; --decide direction if rst
-            rst_t <= '1';
-        elsif(to_integer(unsigned(count_in)) >= 100000) then
+        elsif(unsigned(count_in) >= to_unsigned(1000000, 20)) then
             state <= decide;
-            rst_t <= '1';
-       
         else
             state <= new_state; --Assign new state to current state
-	        rst_t <= '0';
         end if;
-
-       
     end if;
-
 end process;
 
 
@@ -58,8 +51,9 @@ begin
         when decide =>
             dir_l_i <= '0';
             dir_r_i <= '0';
-            rst_l_i <= '0';
-            rst_r_i <= '0';
+            rst_l_i <= '1';
+            rst_r_i <= '1';
+            rst_t <= '1';
 
             if (sens_in_ctrl =  "000") then --0
                 new_state <= forward;
@@ -72,11 +66,11 @@ begin
             elsif(sens_in_ctrl = "001") then --1
                 new_state <= gen_left;
             elsif (sens_in_ctrl = "011") then --3
-                new_state <= left;
+                new_state <= lleft;
             elsif (sens_in_ctrl = "100") then --4
                 new_state <= gen_right;
-            elsif (sens_in_ctrl = "110") then --6
-                new_state <= right;
+            else -- (sens_in_ctrl = "110") 6
+                new_state <= rright;
             end if;
             
         when forward =>
@@ -84,30 +78,35 @@ begin
             dir_r_i <= '1';
             rst_l_i <= '0';
             rst_r_i <= '0';
+            rst_t <= '0';
 
         when gen_right =>
             dir_l_i <= '1';
             rst_r_i <= '1';
             rst_l_i <= '0';
             dir_r_i <= '0';
+            rst_t <= '0';
 
-        when right =>
+        when rright =>
             dir_l_i <= '1';
             dir_r_i <= '0';
             rst_r_i <= '0';
             rst_l_i <= '0';
+            rst_t <= '0';
 
         when gen_left =>
             rst_l_i <= '1';
             dir_r_i <= '1';
             rst_r_i <= '0';
             dir_l_i <= '0';
+            rst_t <= '0';
 
-        when left =>
+        when lleft =>
             dir_l_i <= '0';
             dir_r_i <= '1';
             rst_r_i <= '0';
             rst_l_i <= '0';
+            rst_t <= '0';
 
     end case;
 
